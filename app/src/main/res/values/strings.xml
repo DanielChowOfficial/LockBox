@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Lock Box</string>
+    <string name="action_settings">Settings</string>
+    <string name="new_lock">New Lock</string>
+    <string name="lock_name">Lock Name</string>
+    <string name="lock_combination">Lock Combination</string>
+    <string name="add_lock">Add Lock</string>
+</resources>
