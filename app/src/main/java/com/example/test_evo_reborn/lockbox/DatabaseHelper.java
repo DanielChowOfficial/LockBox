@@ -22,7 +22,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     @Override
-    public void onCreate(SQLiteDatabase sqLiteDatabase) {
+    public void onCreate(SQLiteDatabase db) {
         db.execSQL("CREATE TABLE " + TABLE_NAME + " (" +
                 COL_1 + " INTEGER PRIMARY KEY," +
                 COL_2 + " TEXT," +
@@ -36,6 +36,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void addLock(String name, String combo){
         ContentValues values = new ContentValues();
+        System.out.println("lock " + name + "added.");
         values.put(COL_2, name);
         values.put(COL_3, combo);
         db.insert(TABLE_NAME, null, values);
