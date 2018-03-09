@@ -3,9 +3,11 @@ package com.example.test_evo_reborn.lockbox;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 
 /**
@@ -18,6 +20,7 @@ public class LockFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)   {
         View view = inflater.inflate(R.layout.lock_fragment, container, false);
         return view;
+
     }
 
     public static LockFragment newInstance(int i){

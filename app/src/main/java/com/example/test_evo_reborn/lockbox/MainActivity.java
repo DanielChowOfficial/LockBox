@@ -3,6 +3,7 @@ package com.example.test_evo_reborn.lockbox;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final AlertDialog mBuilder = new AlertDialog.Builder(MainActivity.this).create();
-                View mView = getLayoutInflater().inflate(R.layout.input_dialog, null);
+                final View mView = getLayoutInflater().inflate(R.layout.input_dialog, null);
                 final EditText mLockName = (EditText) mView.findViewById(R.id.lockName);
                 final EditText mLockCombination = (EditText) mView.findViewById(R.id.lockCombination);
                 mLockCombination.setRawInputType(Configuration.KEYBOARD_QWERTY);
@@ -76,8 +77,18 @@ public class MainActivity extends AppCompatActivity {
                             LockFragment newFragment = new LockFragment();
 
 
-                            LinearLayout container = (LinearLayout) findViewById(R.id.ll);
-                            View newView = newFragment.onCreateView(getLayoutInflater(), container, null);
+
+                            final LinearLayout container = (LinearLayout) findViewById(R.id.ll);
+                            final View newView = newFragment.onCreateView(getLayoutInflater(), container, null);
+                            FloatingActionButton deleteButton = (FloatingActionButton) newView.findViewById(R.id.floatingActionButton);
+                            deleteButton.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    System.out.println("delete button clicked");
+                                    final AlertDialog confirmD = confirmDelete(newView);
+                                    confirmD.show();
+                                }
+                            });
                             TextView tvn = (TextView) newView.findViewById(R.id.name);
                             tvn.setText(name);
                             TextView tvc = (TextView) newView.findViewById(R.id.combo);
@@ -127,5 +138,36 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private AlertDialog confirmDelete(final View newView)
+    {
+        AlertDialog myQuittingDialogBox =new AlertDialog.Builder(this)
+                //set message, title, and icon
+                .setTitle("Delete")
+                .setMessage("Do you want to Delete")
+
+
+                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        ((LinearLayout)newView.getParent()).removeView(newView);
+                        dialog.dismiss();
+                    }
+
+                })
+
+
+
+                .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        dialog.dismiss();
+
+                    }
+                })
+                .create();
+        return myQuittingDialogBox;
+
     }
 }
