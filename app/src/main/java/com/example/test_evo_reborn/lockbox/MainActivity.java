@@ -5,6 +5,7 @@ import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -22,6 +23,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.Inflater;
@@ -31,14 +33,14 @@ public class MainActivity extends AppCompatActivity {
     FragmentManager manager;
     FragmentTransaction transaction;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         manager = getFragmentManager();
         transaction = manager.beginTransaction();
         final List<LockData> locks = new ArrayList<LockData>();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         dbH = new DatabaseHelper(this);
-
+        showSavedLocks();
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,31 +75,19 @@ public class MainActivity extends AppCompatActivity {
                             temp.setLockCombo(combo);
                             temp.setLockName(name);
                             locks.add(temp);
-                            dbH.addLock(name, combo);
-                            LockFragment newFragment = new LockFragment();
-
-
-
-                            final LinearLayout container = (LinearLayout) findViewById(R.id.ll);
-                            final View newView = newFragment.onCreateView(getLayoutInflater(), container, null);
-                            FloatingActionButton deleteButton = (FloatingActionButton) newView.findViewById(R.id.floatingActionButton);
-                            deleteButton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    System.out.println("delete button clicked");
-                                    final AlertDialog confirmD = confirmDelete(newView);
-                                    confirmD.show();
-                                }
-                            });
-                            TextView tvn = (TextView) newView.findViewById(R.id.name);
-                            tvn.setText(name);
-                            TextView tvc = (TextView) newView.findViewById(R.id.combo);
-                            tvc.setText(combo);
-                            newView.setLayoutParams(new RelativeLayout.LayoutParams(
-                                    RelativeLayout.LayoutParams.MATCH_PARENT,
-                                    RelativeLayout.LayoutParams.MATCH_PARENT
-                            ));
-                            container.addView(newView);
+                            int currentId;
+                            Cursor savedLocks = dbH.getAllLocks();
+                            if(savedLocks.getCount() != 0) {
+                                savedLocks.moveToLast();
+                                currentId = Integer.parseInt(savedLocks.getString(0));
+                                currentId = currentId + 1;
+                            }
+                            else{
+                                currentId = 0;
+                            }
+                            System.out.println("Current lock# " + currentId);
+                            dbH.addLock(name, combo, Integer.toString(currentId));
+                            addFragment(name, combo, Integer.toString(currentId));
                             mBuilder.dismiss();
 
                         }
@@ -125,6 +115,32 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void addFragment(String name, String combo, String id){
+        LockFragment newFragment = new LockFragment();
+        final LinearLayout container = (LinearLayout) findViewById(R.id.ll);
+        final View newView = newFragment.onCreateView(getLayoutInflater(), container, null);
+        FloatingActionButton deleteButton = (FloatingActionButton) newView.findViewById(R.id.floatingActionButton);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                System.out.println("delete button clicked");
+                final AlertDialog confirmD = confirmDelete(newView);
+                confirmD.show();
+            }
+        });
+        TextView tvn = (TextView) newView.findViewById(R.id.name);
+        tvn.setText(name);
+        TextView tvi = (TextView) newView.findViewById(R.id.ID);
+        tvi.setText(id);
+        TextView tvc = (TextView) newView.findViewById(R.id.combo);
+        tvc.setText(combo);
+        newView.setLayoutParams(new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT
+        ));
+        container.addView(newView);
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -140,6 +156,22 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void showSavedLocks(){
+        Cursor savedLocks = dbH.getAllLocks();
+        if(savedLocks.getCount() == 0){
+            return;
+        }
+        String name;
+        String combo;
+        String id;
+        while (savedLocks.moveToNext()){
+           id = savedLocks.getString(0);
+           name = savedLocks.getString(1);
+           combo = savedLocks.getString(2);
+           addFragment(name, combo, id);
+        }
+    }
+
     private AlertDialog confirmDelete(final View newView)
     {
         AlertDialog myQuittingDialogBox =new AlertDialog.Builder(this)
@@ -152,12 +184,12 @@ public class MainActivity extends AppCompatActivity {
 
                     public void onClick(DialogInterface dialog, int whichButton) {
                         ((LinearLayout)newView.getParent()).removeView(newView);
+                        TextView tvi = (TextView) newView.findViewById(R.id.ID);
+                        dbH.deleteLock(tvi.getText().toString());
                         dialog.dismiss();
                     }
 
                 })
-
-
 
                 .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {

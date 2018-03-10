@@ -2,6 +2,7 @@ package com.example.test_evo_reborn.lockbox;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -34,11 +35,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
     }
 
-    public void addLock(String name, String combo){
+    public void addLock(String name, String combo, String id){
+        db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         System.out.println("lock " + name + "added.");
+        values.put(COL_1, id);
         values.put(COL_2, name);
         values.put(COL_3, combo);
         db.insert(TABLE_NAME, null, values);
+    }
+    public void deleteLock(String id){
+        db = this.getWritableDatabase();
+        System.out.println(db.delete(TABLE_NAME, "ID = ?", new String[]{id}) + " deleted");
+
+    }
+
+    public Cursor getAllLocks(){
+        db = this.getWritableDatabase();
+        Cursor result = db.rawQuery("select * from " + TABLE_NAME, null);
+        return result;
     }
 }
